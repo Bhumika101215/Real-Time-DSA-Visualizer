@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Merge Sort - Algorithm Deep Dive</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400&amp;family=Space+Grotesk:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed": "#301400",
+                    "error": "#ffb4ab",
+                    "on-tertiary-container": "#452000",
+                    "secondary-fixed-dim": "#4cd7f6",
+                    "surface-bright": "#393841",
+                    "primary-fixed": "#e1e0ff",
+                    "surface-container-lowest": "#0d0d15",
+                    "on-secondary": "#003640",
+                    "on-secondary-fixed-variant": "#004e5c",
+                    "surface": "#13131b",
+                    "background": "#13131b",
+                    "on-secondary-fixed": "#001f26",
+                    "on-background": "#e4e1ed",
+                    "surface-container-highest": "#34343d",
+                    "inverse-on-surface": "#303038",
+                    "error-container": "#93000a",
+                    "outline": "#908fa0",
+                    "on-tertiary-fixed-variant": "#703700",
+                    "surface-dim": "#13131b",
+                    "surface-container-high": "#292932",
+                    "inverse-surface": "#e4e1ed",
+                    "secondary-fixed": "#acedff",
+                    "on-primary-fixed": "#07006c",
+                    "on-primary-fixed-variant": "#2f2ebe",
+                    "surface-container-low": "#1b1b23",
+                    "surface-container": "#1f1f27",
+                    "primary-container": "#8083ff",
+                    "secondary-container": "#03b5d3",
+                    "on-surface": "#e4e1ed",
+                    "on-primary-container": "#0d0096",
+                    "surface-variant": "#34343d",
+                    "tertiary-fixed-dim": "#ffb783",
+                    "outline-variant": "#464554",
+                    "primary-fixed-dim": "#c0c1ff",
+                    "primary": "#c0c1ff",
+                    "tertiary": "#ffb783",
+                    "on-surface-variant": "#c7c4d7",
+                    "surface-tint": "#c0c1ff",
+                    "inverse-primary": "#494bd6",
+                    "on-secondary-container": "#00424e",
+                    "on-error-container": "#ffdad6",
+                    "secondary": "#4cd7f6",
+                    "on-primary": "#1000a9",
+                    "on-tertiary": "#4f2500",
+                    "tertiary-fixed": "#ffdcc5",
+                    "tertiary-container": "#d97721",
+                    "on-error": "#690005"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "xl": "48px",
+                    "md": "16px",
+                    "lg": "24px",
+                    "xs": "4px",
+                    "unit": "4px",
+                    "sm": "8px",
+                    "gutter": "20px",
+                    "container-max": "1440px"
+            },
+            "fontFamily": {
+                    "h2": ["Inter"],
+                    "h3": ["Inter"],
+                    "h1": ["Inter"],
+                    "code": ["JetBrains Mono"],
+                    "data-label": ["Space Grotesk"],
+                    "body": ["Inter"]
+            },
+            "fontSize": {
+                    "h2": ["32px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                    "h3": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "h1": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "code": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "data-label": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "body": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(144, 143, 160, 0.2);
+        }
+        .glow-secondary {
+            box-shadow: 0 0 25px rgba(76, 215, 246, 0.2);
+        }
+        .glow-primary {
+            box-shadow: 0 0 25px rgba(192, 193, 255, 0.2);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary/30">
+<!-- Top Navigation -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-lg h-16 max-w-container-max mx-auto bg-surface/60 backdrop-blur-xl border-b border-outline-variant/20 shadow-[0_0_20px_rgba(192,193,255,0.1)]">
+<div class="flex items-center gap-sm">
+<a href="index.html">
+    <span class="material-symbols-outlined text-primary"> arrow_back</span>
+</a>
+<span class="font-h3 text-h3 font-extrabold tracking-tighter text-primary dark:text-primary-fixed-dim">Merge Sort</span>
+</div>
+
+
+</header>
+<main class="pt-24 pb-32 px-md md:px-xl max-w-container-max mx-auto">
+<!-- Header Section -->
+<section class="mb-xl">
+<div class="flex flex-col gap-sm">
+<span class="font-data-label text-data-label uppercase text-secondary tracking-widest">ALGORITHM DEEP DIVE</span>
+<h1 class="font-h1 text-h1 text-on-surface">Merge Sort</h1>
+<div class="flex gap-sm mt-xs">
+<span class="px-md py-1 rounded-full bg-primary/10 border border-primary/20 text-primary-fixed-dim font-data-label text-[10px] uppercase">Divide &amp; Conquer</span>
+<span class="px-md py-1 rounded-full bg-secondary/10 border border-secondary/20 text-secondary-fixed-dim font-data-label text-[10px] uppercase">Stable</span>
+</div>
+</div>
+</section>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- How it Works & Visual Logic (Main Stage) -->
+<div class="col-span-12 lg:col-span-8 flex flex-col gap-gutter">
+<!-- How it Works -->
+<div class="glass-panel rounded-xl p-lg">
+<div class="flex items-center gap-sm mb-md">
+<span class="material-symbols-outlined text-secondary" data-icon="lightbulb">lightbulb</span>
+<h3 class="font-h3 text-h3">How it Works</h3>
+</div>
+<p class="text-on-surface-variant text-body leading-relaxed">
+                        Merge Sort is a highly efficient, comparison-based sorting algorithm that utilizes the <span class="text-primary font-semibold">Divide and Conquer</span> strategy. It works by recursively breaking down an array into smaller sub-arrays until each contains only one element—at which point it is considered sorted. The algorithm then carefully merges these sub-arrays back together in a sorted sequence, comparing individual elements at each step to maintain total order.
+                    </p>
+</div>
+<!-- Visual Logic Stage -->
+<div class="glass-panel rounded-xl p-lg relative overflow-hidden">
+<div class="flex items-center justify-between mb-lg">
+<h3 class="font-h3 text-h3 flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" data-icon="hub">hub</span>
+                            Recursive Split &amp; Merge
+                        </h3>
+<span class="font-data-label text-data-label text-on-surface-variant uppercase">Interactive Visualization Stage</span>
+</div>
+<!-- Merge Visualizer Canvas -->
+<div class="min-h-[400px] flex flex-col justify-between items-center py-md relative"><!-- Initial Array -->
+<div class="flex flex-col items-center gap-xs">
+<div class="flex gap-1 items-end p-2 border border-outline-variant/20 rounded bg-surface-container-lowest/50">
+<div class="w-6 h-12 bg-primary/40 rounded-sm"></div>
+<div class="w-6 h-20 bg-secondary/40 rounded-sm"></div>
+<div class="w-6 h-8 bg-primary/40 rounded-sm"></div>
+<div class="w-6 h-24 bg-secondary/40 rounded-sm"></div>
+<div class="w-6 h-16 bg-primary/40 rounded-sm"></div>
+<div class="w-6 h-28 bg-secondary/40 rounded-sm"></div>
+</div>
+<span class="font-data-label text-[9px] text-on-surface-variant uppercase">Initial Unsorted Array</span>
+</div>
+<!-- First Split -->
+<div class="flex justify-between w-full px-xl mt-2 relative">
+<!-- Connector Lines (Visual Only) -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-4 border-t border-x border-outline-variant/30 rounded-t-lg -mt-2"></div>
+<div class="flex flex-col items-center gap-1">
+<div class="flex gap-1">
+<div class="w-6 h-12 bg-gradient-to-t from-primary/80 to-primary rounded-sm glow-primary"></div>
+<div class="w-6 h-20 bg-gradient-to-t from-primary/80 to-primary rounded-sm glow-primary"></div>
+<div class="w-6 h-8 bg-gradient-to-t from-primary/80 to-primary rounded-sm glow-primary"></div>
+</div>
+<span class="font-data-label text-[10px] text-primary uppercase font-bold">Sub-Array A</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<div class="flex gap-1">
+<div class="w-6 h-24 bg-gradient-to-t from-secondary/80 to-secondary rounded-sm glow-secondary"></div>
+<div class="w-6 h-16 bg-gradient-to-t from-secondary/80 to-secondary rounded-sm glow-secondary"></div>
+<div class="w-6 h-28 bg-gradient-to-t from-secondary/80 to-secondary rounded-sm glow-secondary"></div>
+</div>
+<span class="font-data-label text-[10px] text-secondary uppercase font-bold">Sub-Array B</span>
+</div>
+</div>
+<!-- Second Split (Recursive Depth) -->
+<div class="flex justify-around w-full opacity-60 scale-90 -my-2">
+<div class="flex gap-4">
+<div class="flex gap-1"><div class="w-4 h-12 bg-primary/60 rounded-sm"></div><div class="w-4 h-20 bg-primary/60 rounded-sm"></div></div>
+<div class="w-4 h-8 bg-primary/60 rounded-sm"></div>
+</div>
+<div class="flex gap-4">
+<div class="w-4 h-24 bg-secondary/60 rounded-sm"></div>
+<div class="flex gap-1"><div class="w-4 h-16 bg-secondary/60 rounded-sm"></div><div class="w-4 h-28 bg-secondary/60 rounded-sm"></div></div>
+</div>
+</div>
+<!-- Merge Arrow -->
+<div class="flex flex-col items-center">
+<span class="material-symbols-outlined text-outline-variant/50 text-2xl leading-none" data-icon="keyboard_double_arrow_down">keyboard_double_arrow_down</span>
+<span class="font-data-label text-[9px] text-outline-variant uppercase -mt-1">Merge &amp; Sort</span>
+</div>
+<!-- Final Sorted Array -->
+<div class="flex flex-col items-center gap-1">
+<div class="flex gap-1 items-end p-2 border border-primary/30 rounded-lg bg-surface-container-low glow-primary">
+<div class="w-7 h-8 bg-primary/90 rounded-sm"></div>
+<div class="w-7 h-12 bg-primary/90 rounded-sm"></div>
+<div class="w-7 h-16 bg-secondary/90 rounded-sm"></div>
+<div class="w-7 h-20 bg-primary/90 rounded-sm"></div>
+<div class="w-7 h-24 bg-secondary/90 rounded-sm"></div>
+<div class="w-7 h-28 bg-secondary/90 rounded-sm"></div>
+</div>
+<span class="font-data-label text-[10px] text-primary uppercase tracking-wider">Sorted Resultant Array</span>
+</div></div>
+</div>
+</div>
+<!-- Sidebars: Complexity & Pseudocode -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-gutter">
+<!-- Complexity Stats -->
+<div class="grid grid-cols-1 gap-sm">
+<div class="glass-panel rounded-xl p-md border-l-4 border-l-secondary glow-secondary">
+<span class="font-data-label text-[10px] text-on-surface-variant uppercase">Best Case Time</span>
+<div class="text-h3 font-h3 text-secondary">O(n log n)</div>
+</div>
+<div class="glass-panel rounded-xl p-md border-l-4 border-l-primary glow-primary">
+<span class="font-data-label text-[10px] text-on-surface-variant uppercase">Average Case Time</span>
+<div class="text-h3 font-h3 text-primary">O(n log n)</div>
+</div>
+<div class="glass-panel rounded-xl p-md border-l-4 border-l-primary/60">
+<span class="font-data-label text-[10px] text-on-surface-variant uppercase">Worst Case Time</span>
+<div class="text-h3 font-h3 text-on-surface">O(n log n)</div>
+</div>
+<div class="glass-panel rounded-xl p-md border-l-4 border-l-error">
+<span class="font-data-label text-[10px] text-on-surface-variant uppercase">Space Complexity</span>
+<div class="text-h3 font-h3 text-error">O(n)</div>
+</div>
+</div>
+<!-- Pseudocode -->
+<div class="glass-panel rounded-xl p-md overflow-hidden flex flex-col h-full min-h-[400px]">
+<div class="flex items-center gap-sm mb-md px-sm">
+<span class="material-symbols-outlined text-tertiary" data-icon="code">code</span>
+<h4 class="font-data-label text-data-label text-on-surface uppercase">merge_sort.py</h4>
+</div>
+<div class="bg-surface-container-lowest rounded-lg p-md font-code text-code leading-relaxed text-on-surface-variant h-full border border-outline-variant/10">
+<div class="flex gap-4">
+<span class="text-outline-variant text-right w-4">1</span>
+<span><span class="text-tertiary">def</span> <span class="text-secondary">merge_sort</span>(arr):</span>
+</div>
+<div class="flex gap-4">
+<span class="text-outline-variant text-right w-4">2</span>
+<span class="pl-4"><span class="text-tertiary">if</span> len(arr) &lt;= <span class="text-secondary">1</span>:</span>
+</div>
+<div class="flex gap-4">
+<span class="text-outline-variant text-right w-4">3</span>
+<span class="pl-8"><span class="text-tertiary">return</span> arr</span>
+</div>
+<div class="flex gap-4">
+<span class="text-outline-variant text-right w-4">4</span>
+<span class="pl-4">mid = len(arr) // <span class="text-secondary">2</span></span>
+</div>
+<div class="flex gap-4 bg-primary/10 rounded-sm">
+<span class="text-primary text-right w-4 font-bold border-l-2 border-primary">5</span>
+<span class="pl-4 text-on-surface">left = <span class="text-secondary">merge_sort</span>(arr[:mid])</span>
+</div>
+<div class="flex gap-4 bg-primary/10 rounded-sm">
+<span class="text-primary text-right w-4 font-bold border-l-2 border-primary">6</span>
+<span class="pl-4 text-on-surface">right = <span class="text-secondary">merge_sort</span>(arr[mid:])</span>
+</div>
+<div class="flex gap-4">
+<span class="text-outline-variant text-right w-4">7</span>
+<span class="pl-4"><span class="text-tertiary">return</span> <span class="text-secondary">merge</span>(left, right)</span>
+</div>
+<div class="mt-md text-outline-variant italic"># ... merge implementation ...</div>
+</div>
+</div>
+</div>
+<!-- Key Concepts & Use Cases -->
+<div class="col-span-12 grid grid-cols-1 md:grid-cols-2 gap-gutter mt-md">
+<!-- Recursive Stability -->
+<div class="glass-panel rounded-xl overflow-hidden flex flex-col md:flex-row">
+<div class="w-full md:w-1/3 h-48 md:h-auto overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A highly complex and technical abstract visualization of symmetrical geometric patterns glowing with neon purple and cyan lines. The intricate circuitry-like structure represents mathematical stability and recursive depth, set against a dark, deep-tech background with subtle light particles and soft bokeh effects." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLXdAXYa2djT5FdOMH0eWCF_PF_I1Dk_glCp4fgj7OJ7471jtFqb2EZmvtM41TaWsP6izzb5ZEp1AdXUY3CLN5sL-zys7mRPCpUmNbHPvR6tR-rwKu9iqnGw2dAjv1K60fOC85QMVryhjQtBdkZkd49OYaXA9FFnVC2tNHboimk-yYkW3oi5aWVfaoDZ8j9mOZsaZ3MiBWqzvsdzt7-jggZpgASSxesGDj_40k-PcNjS-GXvyhjzfEJwDH4sGPCTJAv8_XbubOqqZd"/>
+</div>
+<div class="w-full md:w-2/3 p-lg">
+<div class="flex items-center gap-sm mb-sm">
+<span class="material-symbols-outlined text-primary" data-icon="security">security</span>
+<h3 class="font-h3 text-h3">Recursive Stability</h3>
+</div>
+<p class="text-on-surface-variant text-body">
+                            Merge Sort is naturally stable, meaning it preserves the relative order of equal elements. This is critical when sorting complex data structures by multiple keys, such as sorting products by "Price" without losing their original "Rating" sequence.
+                        </p>
+</div>
+</div>
+<!-- Try it Now Floating Action Button -->
+<a class="fixed bottom-lg right-lg z-50 flex items-center gap-md px-lg py-md bg-primary text-on-primary rounded-full font-data-label text-data-label uppercase tracking-widest shadow-[0_8px_32px_rgba(73,75,214,0.4)] hover:scale-105 active:scale-95 transition-all group ring-2 ring-primary/20 ring-offset-2 ring-offset-background" href="{{DATA:SCREEN:SCREEN_6}}" title="Launch the Quick Sort interactive visualizer">
+<a href="visualizer.html"
+   style="
+   display:inline-block;
+   padding:12px 24px;
+   background:#2563eb;
+   color:white;
+   text-decoration:none;
+   border-radius:10px;
+   font-size:18px;
+   font-weight:bold;
+   transition:0.3s;
+   ">
+   Launch Visualizer
+</a>
+<span class="material-symbols-outlined text-on-primary group-hover:translate-x-1 transition-transform">monitoring</span>
+</a>
+<!-- Footer Shadow for visual grounding -->
+<div class="fixed bottom-0 left-0 w-full h-24 bg-gradient-to-t from-background to-transparent pointer-events-none"></div>
+</body></html>

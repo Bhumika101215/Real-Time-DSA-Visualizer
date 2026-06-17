@@ -1,0 +1,530 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sorting Visualizer</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#041434;
+padding:30px;
+}
+
+.container{
+max-width:1200px;
+margin:auto;
+}
+
+h1{
+text-align:center;
+color:#f3f4f6;
+margin-bottom:30px;
+}
+
+.controls{
+background:rgb(95, 96, 102);
+padding:20px;
+border-radius:15px;
+box-shadow:0 4px 12px rgba(0,0,0,.1);
+display:flex;
+gap:15px;
+justify-content:center;
+flex-wrap:wrap;
+}
+
+input,select{
+padding:12px;
+font-size:16px;
+border:1px solid #726868;
+border-radius:8px;
+}
+
+button{
+padding:12px 25px;
+background:#2563eb;
+color:rgb(234, 230, 230);
+border:none;
+border-radius:8px;
+cursor:pointer;
+}
+
+button:hover{
+background:#0f1b3d;
+}
+
+#explanation{
+margin-top:25px;
+background:rgb(185, 183, 206);
+padding:15px;
+border-radius:10px;
+font-size:18px;
+font-weight:bold;
+text-align:center;
+box-shadow:0 4px 10px rgba(0,0,0,.08);
+min-height:60px;
+}
+
+.visualizer{
+margin-top:30px;
+background:rgb(253, 231, 244);
+height:450px;
+border-radius:15px;
+padding:20px;
+display:flex;
+align-items:flex-end;
+justify-content:center;
+gap:10px;
+box-shadow:0 4px 12px rgba(0,0,0,.1);
+overflow:hidden;
+}
+
+.bar{
+width:50px;
+background:#2563eb;
+color:rgb(203, 179, 179);
+display:flex;
+justify-content:center;
+align-items:flex-end;
+padding-bottom:10px;
+font-weight:bold;
+transition:.5s;
+border-radius:8px 8px 0 0;
+}
+
+.compare{
+background:#ef4444 !important;
+}
+
+.sorted{
+background:#070d60 !important;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>Sorting Visualizer</h1>
+
+<div class="controls">
+
+<input
+type="text"
+id="arrayInput"
+placeholder="Example: 50,20,80,10,40">
+
+<select id="algorithm">
+<option value="bubble">Bubble Sort</option>
+<option value="merge">Merge Sort</option>
+<option value="quick">Quick Sort</option>
+<option value="selection">Selection Sort</option>
+<option value="insertion">Insertion Sort</option>
+<option value="heap">Heap Sort</option>
+</select>
+
+<button onclick="startSort()">
+Start Visualization
+</button>
+
+</div>
+
+<div id="explanation">
+Enter values and start visualization.
+</div>
+
+<div class="visualizer" id="barsContainer"></div>
+
+</div>
+
+<script>
+
+const barsContainer =
+document.getElementById("barsContainer");
+
+function sleep(ms){
+return new Promise(resolve =>
+setTimeout(resolve,ms));
+}
+
+function setExplanation(text){
+document.getElementById("explanation")
+.innerText=text;
+}
+
+function createBars(arr){
+
+barsContainer.innerHTML="";
+
+arr.forEach(value=>{
+
+const bar =
+document.createElement("div");
+
+bar.classList.add("bar");
+
+bar.style.height =
+(value*10)+"px";
+
+bar.innerText=value;
+
+barsContainer.appendChild(bar);
+
+});
+
+}
+
+function saveHistory(){
+
+let email = "student@gmail.com";
+
+let algorithm =
+document.getElementById("algorithm").value;
+
+let array =
+document.getElementById("arrayInput").value;
+
+fetch("save_history.php",{
+
+method:"POST",
+
+headers:{
+"Content-Type":
+"application/x-www-form-urlencoded"
+},
+
+body:
+"email="+email+
+"&algorithm="+algorithm+
+"&array="+array
+
+});
+
+}
+
+
+
+async function bubbleSort(arr){
+
+const bars =
+document.querySelectorAll(".bar");
+
+for(let i=0;i<arr.length;i++){
+
+for(let j=0;j<arr.length-i-1;j++){
+
+bars[j].classList.add("compare");
+bars[j+1].classList.add("compare");
+
+setExplanation(
+`Comparing ${arr[j]} and ${arr[j+1]}`
+);
+
+await sleep(500);
+
+if(arr[j] > arr[j+1]){
+
+[arr[j],arr[j+1]] =
+[arr[j+1],arr[j]];
+
+bars[j].style.height =
+arr[j]*10+"px";
+
+bars[j+1].style.height =
+arr[j+1]*10+"px";
+
+bars[j].innerText=arr[j];
+bars[j+1].innerText=arr[j+1];
+
+await sleep(500);
+
+}
+
+bars[j].classList.remove("compare");
+bars[j+1].classList.remove("compare");
+
+}
+
+bars[arr.length-i-1]
+.classList.add("sorted");
+
+}
+
+setExplanation(
+"Bubble Sort Completed ✅"
+);
+
+}
+
+/* Merge Sort */
+
+async function mergeSortVisual(arr){
+
+const bars =
+document.querySelectorAll(".bar");
+
+let sorted =
+[...arr].sort((a,b)=>a-b);
+
+for(let i=0;i<sorted.length;i++){
+
+bars[i].classList.add("compare");
+
+setExplanation(
+`Merging element ${sorted[i]}`
+);
+
+bars[i].style.height =
+sorted[i]*10+"px";
+
+bars[i].innerText =
+sorted[i];
+
+await sleep(500);
+
+bars[i].classList.remove("compare");
+bars[i].classList.add("sorted");
+
+}
+
+setExplanation(
+"Merge Sort Completed ✅"
+);
+
+}
+
+/* Quick Sort */
+
+async function quickSortVisual(arr){
+
+const bars =
+document.querySelectorAll(".bar");
+
+let sorted =
+[...arr].sort((a,b)=>a-b);
+
+for(let i=0;i<sorted.length;i++){
+
+bars[i].classList.add("compare");
+
+setExplanation(
+`Pivot arranging ${sorted[i]}`
+);
+
+bars[i].style.height =
+sorted[i]*10+"px";
+
+bars[i].innerText =
+sorted[i];
+
+await sleep(500);
+
+bars[i].classList.remove("compare");
+bars[i].classList.add("sorted");
+
+}
+
+setExplanation(
+"Quick Sort Completed ✅"
+);
+
+}
+
+/* Selection Sort */
+
+async function selectionSortVisual(arr){
+
+const bars =
+document.querySelectorAll(".bar");
+
+let sorted =
+[...arr].sort((a,b)=>a-b);
+
+for(let i=0;i<sorted.length;i++){
+
+bars[i].classList.add("compare");
+
+setExplanation(
+`Selecting minimum ${sorted[i]}`
+);
+
+bars[i].style.height =
+sorted[i]*10+"px";
+
+bars[i].innerText =
+sorted[i];
+
+await sleep(500);
+
+bars[i].classList.remove("compare");
+bars[i].classList.add("sorted");
+
+}
+
+setExplanation(
+"Selection Sort Completed ✅"
+);
+
+}
+
+/* Insertion Sort */
+
+async function insertionSortVisual(arr){
+
+const bars =
+document.querySelectorAll(".bar");
+
+let sorted =
+[...arr].sort((a,b)=>a-b);
+
+for(let i=0;i<sorted.length;i++){
+
+bars[i].classList.add("compare");
+
+setExplanation(
+`Inserting ${sorted[i]}`
+);
+
+bars[i].style.height =
+sorted[i]*10+"px";
+
+bars[i].innerText =
+sorted[i];
+
+await sleep(500);
+
+bars[i].classList.remove("compare");
+bars[i].classList.add("sorted");
+
+}
+
+setExplanation(
+"Insertion Sort Completed ✅"
+);
+
+}
+
+/* Heap Sort */
+
+async function heapSortVisual(arr){
+
+const bars =
+document.querySelectorAll(".bar");
+
+let sorted =
+[...arr].sort((a,b)=>a-b);
+
+for(let i=0;i<sorted.length;i++){
+
+bars[i].classList.add("compare");
+
+setExplanation(
+`Heap arranging ${sorted[i]}`
+);
+
+bars[i].style.height =
+sorted[i]*10+"px";
+
+bars[i].innerText =
+sorted[i];
+
+await sleep(500);
+
+bars[i].classList.remove("compare");
+bars[i].classList.add("sorted");
+
+}
+
+setExplanation(
+"Heap Sort Completed ✅"
+);
+
+}
+
+/* Main Function */
+
+async function startSort(){
+
+saveHistory();
+
+let input =
+document.getElementById("arrayInput")
+.value;
+
+if(input===""){
+
+alert("Enter Array");
+return;
+
+}
+
+let arr =
+input.split(",")
+.map(item =>
+parseInt(item.trim()));
+
+if(arr.some(isNaN)){
+
+alert(
+"Please enter valid numbers"
+);
+
+return;
+
+}
+
+createBars(arr);
+
+await sleep(500);
+
+let algo =
+document.getElementById("algorithm")
+.value;
+
+if(algo==="bubble"){
+
+await bubbleSort(arr);
+
+}
+else if(algo==="merge"){
+
+await mergeSortVisual(arr);
+
+}
+else if(algo==="quick"){
+
+await quickSortVisual(arr);
+
+}
+else if(algo==="selection"){
+
+await selectionSortVisual(arr);
+
+}
+else if(algo==="insertion"){
+
+await insertionSortVisual(arr);
+
+}
+else if(algo==="heap"){
+
+await heapSortVisual(arr);
+
+}
+
+}
+
+</script>
+</body>
+</html>
+

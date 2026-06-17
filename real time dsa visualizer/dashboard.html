@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sorting Visualizer Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-950 min-h-screen">
+
+<header class="bg-slate-900 p-6 border-b border-slate-800">
+
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+
+        <!-- Logo -->
+        <a class="text-3xl font-bold text-cyan-400">
+            Sorting Visualizer
+    </a>
+
+        <!-- Sign Up Button -->
+        <a href="signup.html">
+            <button class="px-6 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition">
+                Sign Up
+            </button>
+        </a>
+
+    </div>
+
+</header>
+
+<!-- Welcome -->
+<section class="text-center py-10 px-4">
+    <h2 class="text-4xl font-bold text-white">
+        Welcome 
+    </h2>
+
+    <p class="text-slate-400 mt-4 max-w-2xl mx-auto">
+        This platform helps students understand different sorting algorithms.
+        You can learn how each algorithm works, its logic, and its time complexity.
+    </p>
+</section>
+
+<!-- Algorithms -->
+<section class="max-w-6xl mx-auto px-6 pb-10">
+
+    <h2 class="text-2xl font-bold text-white mb-6 text-center">
+        Available Sorting Algorithms
+    </h2>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+            <h3 class="text-cyan-400 text-xl font-bold">Bubble Sort</h3>
+            <p class="text-slate-400 mt-3">
+                Compares adjacent elements and swaps them until the array is sorted.
+            </p>
+        </div>
+
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+            <h3 class="text-cyan-400 text-xl font-bold">Selection Sort</h3>
+            <p class="text-slate-400 mt-3">
+                Finds the smallest element and places it in its correct position.
+            </p>
+        </div>
+
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+            <h3 class="text-cyan-400 text-xl font-bold">Insertion Sort</h3>
+            <p class="text-slate-400 mt-3">
+                Builds the sorted array one item at a time.
+            </p>
+        </div>
+
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+            <h3 class="text-cyan-400 text-xl font-bold">Merge Sort</h3>
+            <p class="text-slate-400 mt-3">
+                Uses divide and conquer technique to sort data efficiently.
+            </p>
+        </div>
+
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+            <h3 class="text-cyan-400 text-xl font-bold">Quick Sort</h3>
+            <p class="text-slate-400 mt-3">
+                Selects a pivot element and partitions the array around it.
+            </p>
+        </div>
+
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+            <h3 class="text-cyan-400 text-xl font-bold">Heap Sort</h3>
+            <p class="text-slate-400 mt-3">
+                Uses a heap data structure to sort elements efficiently.
+            </p>
+        </div>
+
+    </div>
+</section>
+
+<footer class="text-center text-slate-500 py-6 border-t border-slate-800">
+    © 2026 Sorting Visualizer Project
+</footer>
+
+</body>
+</html>
