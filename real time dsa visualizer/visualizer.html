@@ -113,6 +113,23 @@ background:#070d60 !important;
 </head>
 <body>
 
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+    <label for="speed" style="color: white; font-size: 14px; font-weight: bold;">
+        Speed: <span id="speedVal">500</span>ms
+    </label>
+    <input 
+        type="range" 
+        id="speed" 
+        min="50" 
+        max="1500" 
+        value="500" 
+        step="50"
+        oninput="updateSpeed(this.value)">
+</div>
+<button id="pauseBtn" onclick="togglePause()" style="background: #4ab8ef; color: black; margin-center: 10px;">
+    Pause 
+</button>
 <div class="container">
 
 <h1>Sorting Visualizer</h1>
@@ -149,12 +166,57 @@ Enter values and start visualization.
 
 <script>
 
+
+      // Script ke sabse upar (barsContainer ke paas) ise declare karein
+let animationSpeed = 500; 
+let isPaused = false;
+let resolvePause;
+
+
+
+function togglePause() {
+    const pauseBtn = document.getElementById("pauseBtn");
+    
+    isPaused = !isPaused; // State flip karein (true -> false ya false -> true)
+
+    if (isPaused) {
+        pauseBtn.innerText = "Resume ▶️";
+        pauseBtn.style.background = "#22c55e"; // Green color for resume
+        pauseBtn.style.color = "white";
+    } else {
+        pauseBtn.innerText = "Pause ⏸️";
+        pauseBtn.style.background = "#eab308"; // Yellow color for pause
+        pauseBtn.style.color = "black";
+        
+      
+        if (resolvePause) {
+            resolvePause();
+        }
+    }
+}
+
+
+function updateSpeed(val) {
+    animationSpeed = parseInt(val);
+    document.getElementById("speedVal").innerText = val;
+}
+
+
 const barsContainer =
 document.getElementById("barsContainer");
 
-function sleep(ms){
-return new Promise(resolve =>
-setTimeout(resolve,ms));
+// Purane sleep function ko isse replace karein
+// Apne purane sleep function ko isse replace karein
+async function sleep() {
+    // Pehle speed delay ke liye rukte hain
+    await new Promise(resolve => setTimeout(resolve, animationSpeed));
+
+    // Agar pause press kiya gaya hai, toh yahan ruk jao jab tak resume na ho
+    if (isPaused) {
+        await new Promise(resolve => {
+            resolvePause = resolve; // Resume button dabte hi ye resolve call hoga
+        });
+    }
 }
 
 function setExplanation(text){
@@ -267,194 +329,244 @@ setExplanation(
 }
 
 /* Merge Sort */
+async function mergeSortVisual(arr) {
+    const bars = document.querySelectorAll(".bar");
 
-async function mergeSortVisual(arr){
+    async function merge(l, m, r) {
+        let n1 = m - l + 1;
+        let n2 = r - m;
 
-const bars =
-document.querySelectorAll(".bar");
+        let L = arr.slice(l, m + 1);
+        let R = arr.slice(m + 1, r + 1);
 
-let sorted =
-[...arr].sort((a,b)=>a-b);
+        let i = 0, j = 0, k = l;
 
-for(let i=0;i<sorted.length;i++){
+        while (i < n1 && j < n2) {
+            bars[k].classList.add("compare");
+            setExplanation(`Comparing sub-arrays elements: ${L[i]} and ${R[j]}`);
+            await sleep(400);
 
-bars[i].classList.add("compare");
+            if (L[i] <= R[j]) {
+                arr[k] = L[i];
+                i++;
+            } else {
+                arr[k] = R[j];
+                j++;
+            }
+            bars[k].style.height = arr[k] * 10 + "px";
+            bars[k].innerText = arr[k];
+            bars[k].classList.remove("compare");
+            k++;
+        }
 
-setExplanation(
-`Merging element ${sorted[i]}`
-);
+        while (i < n1) {
+            arr[k] = L[i];
+            bars[k].style.height = arr[k] * 10 + "px";
+            bars[k].innerText = arr[k];
+            i++; k++;
+            await sleep(200);
+        }
 
-bars[i].style.height =
-sorted[i]*10+"px";
+        while (j < n2) {
+            arr[k] = R[j];
+            bars[k].style.height = arr[k] * 10 + "px";
+            bars[k].innerText = arr[k];
+            j++; k++;
+            await sleep(200);
+        }
+    }
 
-bars[i].innerText =
-sorted[i];
+    async function mergeSortHelper(l, r) {
+        if (l < r) {
+            let m = Math.floor((l + r) / 2);
+            await mergeSortHelper(l, m);
+            await mergeSortHelper(m + 1, r);
+            await merge(l, m, r);
+        }
+    }
 
-await sleep(500);
-
-bars[i].classList.remove("compare");
-bars[i].classList.add("sorted");
-
-}
-
-setExplanation(
-"Merge Sort Completed ✅"
-);
-
+    await mergeSortHelper(0, arr.length - 1);
+    bars.forEach(bar => bar.classList.add("sorted"));
+    setExplanation("Merge Sort Completed ✅");
 }
 
 /* Quick Sort */
 
-async function quickSortVisual(arr){
+async function quickSortVisual(arr) {
+    const bars = document.querySelectorAll(".bar");
+    
+    async function partition(low, high) {
+        let pivot = arr[high];
+        bars[high].classList.add("compare"); // Pivot ko highight karna
+        setExplanation(`Choosing ${pivot} as Pivot`);
+        await sleep(400);
 
-const bars =
-document.querySelectorAll(".bar");
+        let i = low - 1;
 
-let sorted =
-[...arr].sort((a,b)=>a-b);
+        for (let j = low; j < high; j++) {
+            bars[j].classList.add("compare");
+            if (arr[j] < pivot) {
+                i++;
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+                bars[i].style.height = arr[i] * 10 + "px";
+                bars[j].style.height = arr[j] * 10 + "px";
+                bars[i].innerText = arr[i];
+                bars[j].innerText = arr[j];
+                await sleep(400);
+            }
+            bars[j].classList.remove("compare");
+        }
 
-for(let i=0;i<sorted.length;i++){
+        [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+        bars[i + 1].style.height = arr[i + 1] * 10 + "px";
+        bars[high].style.height = arr[high] * 10 + "px";
+        bars[i + 1].innerText = arr[i + 1];
+        bars[high].innerText = arr[high];
+        
+        bars[high].classList.remove("compare");
+        bars[i + 1].classList.add("sorted"); // Pivot apni sahi jagah par aa gaya
+        await sleep(400);
 
-bars[i].classList.add("compare");
+        return i + 1;
+    }
 
-setExplanation(
-`Pivot arranging ${sorted[i]}`
-);
+    async function quickSortHelper(low, high) {
+        if (low <= high) {
+            let pi = await partition(low, high);
+            await quickSortHelper(low, pi - 1);
+            await quickSortHelper(pi + 1, high);
+        }
+    }
 
-bars[i].style.height =
-sorted[i]*10+"px";
+    await quickSortHelper(0, arr.length - 1);
+    bars.forEach(bar => bar.classList.add("sorted"));
+    setExplanation("Quick Sort Completed ✅");
+}
+async function selectionSortVisual(arr) {
+    const bars = document.querySelectorAll(".bar");
 
-bars[i].innerText =
-sorted[i];
+    for (let i = 0; i < arr.length; i++) {
+        let minIdx = i;
+        bars[minIdx].classList.add("compare");
 
-await sleep(500);
+        for (let j = i + 1; j < arr.length; j++) {
+            bars[j].classList.add("compare");
+            setExplanation(`Comparing ${arr[j]} with current minimum ${arr[minIdx]}`);
+            await sleep(400);
 
-bars[i].classList.remove("compare");
-bars[i].classList.add("sorted");
+            if (arr[j] < arr[minIdx]) {
+                bars[minIdx].classList.remove("compare");
+                minIdx = j;
+                bars[minIdx].classList.add("compare");
+            } else {
+                bars[j].classList.remove("compare");
+            }
+        }
 
+        if (minIdx !== i) {
+            setExplanation(`Swapping ${arr[i]} and ${arr[minIdx]}`);
+            [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
+
+            // DOM Heights update karna
+            bars[i].style.height = arr[i] * 10 + "px";
+            bars[minIdx].style.height = arr[minIdx] * 10 + "px";
+            bars[i].innerText = arr[i];
+            bars[minIdx].innerText = arr[minIdx];
+            await sleep(400);
+        }
+
+        bars[minIdx].classList.remove("compare");
+        bars[i].classList.add("sorted");
+    }
+    setExplanation("Selection Sort Completed ✅");
 }
 
-setExplanation(
-"Quick Sort Completed ✅"
-);
+async function insertionSortVisual(arr) {
+    const bars = document.querySelectorAll(".bar");
 
-}
+    for (let i = 1; i < arr.length; i++) {
+        let key = arr[i];
+        let j = i - 1;
 
-/* Selection Sort */
+        setExplanation(`Picking ${key} to insert in sorted subarray`);
+        bars[i].classList.add("compare");
+        await sleep(400);
 
-async function selectionSortVisual(arr){
+        while (j >= 0 && arr[j] > key) {
+            bars[j].classList.add("compare");
+            setExplanation(`Shifting ${arr[j]} to the right`);
+            
+            arr[j + 1] = arr[j];
+            bars[j + 1].style.height = arr[j + 1] * 10 + "px";
+            bars[j + 1].innerText = arr[j + 1];
+            
+            await sleep(400);
+            bars[j].classList.remove("compare");
+            j--;
+        }
+        
+        arr[j + 1] = key;
+        bars[j + 1].style.height = key * 10 + "px";
+        bars[j + 1].innerText = key;
+        bars[i].classList.remove("compare");
+        await sleep(400);
+    }
 
-const bars =
-document.querySelectorAll(".bar");
-
-let sorted =
-[...arr].sort((a,b)=>a-b);
-
-for(let i=0;i<sorted.length;i++){
-
-bars[i].classList.add("compare");
-
-setExplanation(
-`Selecting minimum ${sorted[i]}`
-);
-
-bars[i].style.height =
-sorted[i]*10+"px";
-
-bars[i].innerText =
-sorted[i];
-
-await sleep(500);
-
-bars[i].classList.remove("compare");
-bars[i].classList.add("sorted");
-
-}
-
-setExplanation(
-"Selection Sort Completed ✅"
-);
-
-}
-
-/* Insertion Sort */
-
-async function insertionSortVisual(arr){
-
-const bars =
-document.querySelectorAll(".bar");
-
-let sorted =
-[...arr].sort((a,b)=>a-b);
-
-for(let i=0;i<sorted.length;i++){
-
-bars[i].classList.add("compare");
-
-setExplanation(
-`Inserting ${sorted[i]}`
-);
-
-bars[i].style.height =
-sorted[i]*10+"px";
-
-bars[i].innerText =
-sorted[i];
-
-await sleep(500);
-
-bars[i].classList.remove("compare");
-bars[i].classList.add("sorted");
-
-}
-
-setExplanation(
-"Insertion Sort Completed ✅"
-);
-
+    // Pura array sorted hone ke baad sabhi bars ko sorted color dena
+    bars.forEach(bar => bar.classList.add("sorted"));
+    setExplanation("Insertion Sort Completed ✅");
 }
 
 /* Heap Sort */
 
-async function heapSortVisual(arr){
+async function heapSortVisual(arr) {
+    const bars = document.querySelectorAll(".bar");
+    let n = arr.length;
 
-const bars =
-document.querySelectorAll(".bar");
+    async function heapify(n, i) {
+        let largest = i;
+        let l = 2 * i + 1;
+        let r = 2 * i + 2;
 
-let sorted =
-[...arr].sort((a,b)=>a-b);
+        if (l < n && arr[l] > arr[largest]) largest = l;
+        if (r < n && arr[r] > arr[largest]) largest = r;
 
-for(let i=0;i<sorted.length;i++){
+        if (largest !== i) {
+            bars[i].classList.add("compare");
+            bars[largest].classList.add("compare");
+            setExplanation(`Heapifying: Swapping ${arr[i]} and ${arr[largest]}`);
+            
+            [arr[i], arr[largest]] = [arr[largest], arr[i]];
+            bars[i].style.height = arr[i] * 10 + "px";
+            bars[largest].style.height = arr[largest] * 10 + "px";
+            bars[i].innerText = arr[i];
+            bars[largest].innerText = arr[largest];
+            
+            await sleep(400);
+            bars[i].classList.remove("compare");
+            bars[largest].classList.remove("compare");
 
-bars[i].classList.add("compare");
-
-setExplanation(
-`Heap arranging ${sorted[i]}`
-);
-
-bars[i].style.height =
-sorted[i]*10+"px";
-
-bars[i].innerText =
-sorted[i];
-
-await sleep(500);
-
-bars[i].classList.remove("compare");
-bars[i].classList.add("sorted");
-
-}
-
-setExplanation(
-"Heap Sort Completed ✅"
-);
-
+            await heapify(n, largest);
+        }
+    }
+qqq
 }
 
 /* Main Function */
 
 async function startSort(){
 
+    async function startSort() {
+    
+    isPaused = false;
+    const pauseBtn = document.getElementById("pauseBtn");
+    if(pauseBtn) {
+        pauseBtn.innerText = "Pause ⏸️";
+        pauseBtn.style.background = "#eab308";
+        pauseBtn.style.color = "black";
+    }
+    
+}
 saveHistory();
 
 let input =
@@ -485,7 +597,11 @@ return;
 
 createBars(arr);
 
-await sleep(500);
+// Pehle aisa tha:
+// await sleep(500);
+
+// Ab aisa karna hai:
+await sleep();
 
 let algo =
 document.getElementById("algorithm")
