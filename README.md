@@ -67,9 +67,7 @@ Create a database named dsa_visualizer
 Import database/dsa_visualizer.sql
 Configure the connection
 Open php/config.php and set your MySQL host, username, password, and database name
-Run the project
-Visit http://localhost/dsa-visualizer in your browser
-Usage
+
 Create an account from the Sign Up page and log in
 Open the Dashboard and choose an algorithm, or go straight to the Visualizer
 Enter your own values (comma-separated) and select a sorting algorithm
