@@ -62,7 +62,7 @@ bash
    cp -r dsa-visualizer /path/to/xampp/htdocs/
 Set up the database
 Start Apache and MySQL from the XAMPP control panel
-Open http://localhost/phpmyadmin
+
 Create a database named dsa_visualizer
 Import database/dsa_visualizer.sql
 Configure the connection
